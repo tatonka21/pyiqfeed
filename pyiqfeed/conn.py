@@ -62,6 +62,8 @@ from .exceptions import NoDataError, UnexpectedField, UnexpectedMessage
 from .exceptions import UnexpectedProtocol, UnauthorizedError
 from . import field_readers as fr
 
+global file_name_out 
+file_name_out= "None"
 
 class FeedConn:
     """
@@ -182,6 +184,18 @@ class FeedConn:
         with self._send_lock:
             self._sock.sendall(cmd.encode(encoding='latin-1'))
 
+    def _send_cmd_l1(self, cmd: str) -> None:
+        with self._send_lock:
+            ab = self._sock.sendall(cmd.encode(encoding='latin-1'))
+            # file = sock.makefile('w')                 # file interface: text, buffered
+            # sys.stdout = file                         # make prints go to sock.send
+            # return sock    
+            # if file_name_out != "None":
+                # output_file = r"C:\\python_tests\\" + file_name_out + ".csv"
+                # f = open( output_file , 'a')
+                # f.write(ab)
+                # print(file_name_out)
+
     def reconnect_failed(self) -> bool:
         """
         Returns true if IQClient.exe failed to reconnect to DTN's servers.
@@ -202,6 +216,7 @@ class FeedConn:
 
     def _read_messages(self) -> bool:
         """Read raw text sent by IQFeed on socket"""
+        old_data_recvd = ""
         ready_list = select.select([self._sock], [], [self._sock], 5)
         if ready_list[2]:
             raise RuntimeError(
@@ -210,7 +225,7 @@ class FeedConn:
         if ready_list[0]:
             data_recvd = self._sock.recv(1024).decode('latin-1')
             with self._buf_lock:
-                self._recv_buf += data_recvd
+                self._recv_buf += data_recvd 
                 return True
         return False
 
@@ -221,6 +236,24 @@ class FeedConn:
             if next_delim != -1:
                 message = self._recv_buf[:next_delim].strip()
                 self._recv_buf = self._recv_buf[(next_delim + 1):]
+                
+                #Virus Mod
+                if file_name_out != "None":
+                    drcd = message.replace(",,",",0,").replace(",,",",0,")
+                    drcd = drcd.split(",")
+                    if drcd[0] == "Q":
+                        drcd = drcd[1:-1]
+                        if file_name_out != "symbol" :
+                            output_file = r"C:\\python_tests\\" + file_name_out + ".csv"
+                        else :
+                            output_file = r"C:\\python_tests\\" + drcd[0] + ".csv"
+                        f = open( output_file , 'a')
+                        tstr = ""
+                        for a in drcd :
+                            tstr = tstr + str(a) + ","
+                        tstr = str(tstr) + "\n"
+                        f.write(tstr)
+                    
                 return message
             else:
                 return ""
@@ -1126,6 +1159,10 @@ class QuoteConn(FeedConn):
 
         """
         self._send_cmd("S,REQUEST CURRENT UPDATE FIELDNAMES\r\n")
+        
+    def file_name(self, file_name_out_var : str) -> None:   
+        global file_name_out 
+        file_name_out = file_name_out_var
 
     def select_update_fieldnames(self, field_names: List[str]) -> None:
         """
@@ -1220,7 +1257,7 @@ class QuoteConn(FeedConn):
         received.
 
         """
-        self._send_cmd("w%s\r\n" % symbol)
+        self._send_cmd_l1("w%s\r\n" % symbol)
 
     def unwatch(self, symbol: str) -> None:
         """
