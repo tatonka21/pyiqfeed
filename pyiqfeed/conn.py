@@ -61,6 +61,7 @@ import numpy as np
 from .exceptions import NoDataError, UnexpectedField, UnexpectedMessage
 from .exceptions import UnexpectedProtocol, UnauthorizedError
 from . import field_readers as fr
+import defusedxml.ElementTree
 
 global file_name_out 
 file_name_out= "None"
@@ -3412,7 +3413,7 @@ class NewsConn(FeedConn):
             return np.array([res.err_msg], dtype='object')
         else:
             raw_text = '\n'.join([''.join(line[1:]) for line in res.raw_data])
-            return ElementTree.fromstring(raw_text)
+            return defusedxml.ElementTree.fromstring(raw_text)
 
     def _create_config_structure(self, xml_data: ElementTree.Element) -> dict:
         """Convert et.Element of configuration into nested list"""
