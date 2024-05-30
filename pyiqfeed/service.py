@@ -36,6 +36,7 @@ import select
 import subprocess
 import logging
 from typing import Sequence
+from security import safe_command
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -149,7 +150,7 @@ class FeedService:
                 iqfeed_call = prefix_str + base_iqfeed_call
 
                 logging.info("Running %s" % iqfeed_call)
-                subprocess.Popen(iqfeed_call,
+                safe_command.run(subprocess.Popen, iqfeed_call,
                                  shell=True,
                                  stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL,
