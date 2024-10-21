@@ -247,12 +247,12 @@ class FeedConn:
                             output_file = r"C:\\python_tests\\" + file_name_out + ".csv"
                         else :
                             output_file = r"C:\\python_tests\\" + drcd[0] + ".csv"
-                        f = open( output_file , 'a')
-                        tstr = ""
-                        for a in drcd :
-                            tstr = tstr + str(a) + ","
-                        tstr = str(tstr) + "\n"
-                        f.write(tstr)
+                        with open( output_file , 'a') as f:
+                            tstr = ""
+                            for a in drcd :
+                                tstr = tstr + str(a) + ","
+                            tstr = str(tstr) + "\n"
+                            f.write(tstr)
                     
                 return message
             else:
