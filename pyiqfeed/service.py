@@ -150,8 +150,7 @@ class FeedService:
 
                 logging.info("Running %s" % iqfeed_call)
                 subprocess.Popen(iqfeed_call,
-                                 shell=True,
-                                 stdin=subprocess.DEVNULL,
+                                 shell=False, stdin=subprocess.DEVNULL,
                                  stdout=subprocess.DEVNULL,
                                  stderr=subprocess.DEVNULL,
                                  preexec_fn=os.setpgrp)
